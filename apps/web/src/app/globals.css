@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens.
+ * Enamel paper and slate ink keep the console calm and highly legible. Violet is reserved for one
+ * job: it is the engine's voice, and it only appears where the interface adapted itself.
+ */
+:root {
+  --paper: #f2f4f1;
+  --surface: #ffffff;
+  --sunken: #e7ebe6;
+  --ink: #18212b;
+  --ink-muted: #56616e;
+  --line: #d3d9d1;
+  --line-strong: #aab3ab;
+  --engine: #4b3bc4;
+  --engine-soft: #ece9fb;
+  --danger: #b8382a;
+  --danger-soft: #fbebe8;
+  --ok: #2e7d5b;
+  --ok-soft: #e2f1e8;
+  --caution: #8a5d00;
+  --caution-soft: #fbf1db;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12171d;
+    --surface: #19212a;
+    --sunken: #0e1318;
+    --ink: #e6ebee;
+    --ink-muted: #9ca8b4;
+    --line: #2b3540;
+    --line-strong: #46525f;
+    --engine: #a99bff;
+    --engine-soft: #251f45;
+    --danger: #f08a7a;
+    --danger-soft: #3a1d19;
+    --ok: #6fcb9f;
+    --ok-soft: #13302a;
+    --caution: #e6b450;
+    --caution-soft: #33270f;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-engine: var(--engine);
+  --color-engine-soft: var(--engine-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-caution: var(--caution);
+  --color-caution-soft: var(--caution-soft);
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-atkinson-mono), ui-monospace, "Cascadia Mono", monospace;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--engine);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Keyboard navigation adaptation: stronger focus that is easy to follow across the page. */
+  [data-nav="keyboard"] :focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px var(--engine-soft);
+  }
+
+  ::selection {
+    background: var(--engine-soft);
+    color: var(--ink);
+  }
+
+  dialog::backdrop {
+    background: rgb(14 19 24 / 0.55);
+  }
+}
+
+@layer components {
+  /* The adaptation notch: a violet mark in the margin of anything the engine changed. */
+  .adapted {
+    position: relative;
+  }
+  .adapted::before {
+    content: "";
+    position: absolute;
+    inset-block: 0.25rem;
+    inset-inline-start: -0.875rem;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--engine);
+    transform-origin: top;
+    animation: notch-in 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .adapt-swap {
+    animation: adapt-swap 360ms ease-out;
+  }
+}
+
+@keyframes notch-in {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes adapt-swap {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: reduced motion must win over every animation. */
+    animation-duration: 1ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced motion must win over every transition. */
+    transition-duration: 1ms !important;
+  }
+}
