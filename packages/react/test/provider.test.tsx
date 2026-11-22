@@ -16,6 +16,24 @@ const falseConsent = () => ({
   remember: false,
 });
 
+function StoredProbe({ storage }: { storage: Storage }) {
+  const { revision } = useEngineSnapshot();
+  const { decide } = useConsent();
+  const [stored, setStored] = useState<string | null>(null);
+  useEffect(() => {
+    void revision;
+    setStored(storage.getItem(STORAGE_KEY));
+  }, [revision, storage]);
+  return (
+    <>
+      <button type="button" onClick={() => decide(ALL_CONSENT)}>
+        allow
+      </button>
+      <output data-testid="stored">{stored ?? "none"}</output>
+    </>
+  );
+}
+
 function Probe() {
   const profile = useAdaptation();
   return <output data-testid="profile">{JSON.stringify(profile)}</output>;
@@ -85,26 +103,9 @@ describe("AdaptiveProvider", () => {
 
   it("has saved a choice by the time components re-render with it", () => {
     const storage = new MemoryStorage();
-    function StoredProbe() {
-      const { revision } = useEngineSnapshot();
-      const { decide } = useConsent();
-      const [stored, setStored] = useState<string | null>(null);
-      useEffect(() => {
-        void revision;
-        setStored(storage.getItem(STORAGE_KEY));
-      }, [revision]);
-      return (
-        <>
-          <button type="button" onClick={() => decide(ALL_CONSENT)}>
-            allow
-          </button>
-          <output data-testid="stored">{stored ?? "none"}</output>
-        </>
-      );
-    }
     render(
       <AdaptiveProvider storage={storage}>
-        <StoredProbe />
+        <StoredProbe storage={storage} />
       </AdaptiveProvider>,
     );
     act(() => screen.getByText("allow").click());
