@@ -70,7 +70,7 @@ export const DEFAULT_RULES: readonly Rule[] = [
   {
     id: "clarify-risk-when-uncertain",
     description:
-      "You hesitated around risky actions, so confirmations now spell out exactly what will happen.",
+      "There was some back-and-forth recently, so confirmations now spell out exactly what will happen.",
     priority: 60,
     when: {
       any: [
