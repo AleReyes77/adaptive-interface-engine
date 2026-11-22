@@ -26,7 +26,8 @@ export interface Stabilizer {
   next(target: AdaptationProfile, now: number): AdaptationProfile;
   /** Changes that are wanted but not applied yet, and since when. */
   pending(): PendingChanges;
-  reset(): void;
+  /** Forgets history and starts from `baseline` (the initial profile when omitted). */
+  reset(baseline?: AdaptationProfile): void;
 }
 
 export const DEFAULT_RELAX_AFTER_MS = 20_000;
@@ -82,8 +83,8 @@ export function createStabilizer(options: StabilizerOptions = {}): Stabilizer {
       return current;
     },
     pending: () => pending,
-    reset() {
-      current = initial;
+    reset(baseline) {
+      current = baseline ?? initial;
       lastChangeAt = {};
       pending = {};
     },

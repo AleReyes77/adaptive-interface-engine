@@ -20,6 +20,7 @@ import {
   type ProfilePatch,
 } from "./profile/dimensions";
 import {
+  DEFAULT_REASON,
   type DecisionMap,
   type DimensionDecision,
   overrideDecision,
@@ -178,10 +179,22 @@ export function createAdaptiveEngine(options: EngineOptions = {}): AdaptiveEngin
   let lastApplied: Partial<Record<Dimension, DimensionDecision>> = {};
   let revision = 0;
 
+  /** Signals for the events still inside the retention window. */
+  function measure(now: number) {
+    const events = store.list(now);
+    // The task counter only grows from timing events, so it is evidence only with timing consent.
+    const signals = computeSignals(
+      events,
+      now,
+      { completedTasksTotal, experienceKnown: consent.timing },
+      options.signals,
+    );
+    return { events, signals };
+  }
+
   function compute(): MutableSnapshot {
     const now = clock();
-    const events = store.list(now);
-    const signals = computeSignals(events, now, { completedTasksTotal }, options.signals);
+    const { events, signals } = measure(now);
     const base = { signals, consent, overrides, paused, events, completedTasksTotal, rules };
 
     if (paused || !hasAnyConsent(consent)) {
@@ -208,7 +221,13 @@ export function createAdaptiveEngine(options: EngineOptions = {}): AdaptiveEngin
         decision = targetDecision;
         lastApplied[d] = decision;
       } else {
-        decision = lastApplied[d] ?? { ...targetDecision, value: stable[d], source: "default" };
+        decision = lastApplied[d] ?? {
+          dimension: d,
+          value: stable[d],
+          source: "default",
+          reason: DEFAULT_REASON,
+          outranked: [],
+        };
       }
 
       const override = overrides[d];
@@ -249,9 +268,15 @@ export function createAdaptiveEngine(options: EngineOptions = {}): AdaptiveEngin
     for (const listener of [...listeners]) listener();
   }
 
+  /**
+   * Restarts adaptation from what the remaining data supports right now, in both directions:
+   * anything derived from deleted data disappears at once, and anything that still holds stays.
+   */
   function resetAdaptation() {
-    stabilizer.reset();
-    lastApplied = {};
+    const now = clock();
+    const target = resolveProfile(rules, measure(now).signals);
+    stabilizer.reset(target.profile);
+    lastApplied = { ...target.decisions };
   }
 
   return {

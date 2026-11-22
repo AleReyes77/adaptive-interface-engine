@@ -1,7 +1,7 @@
 "use client";
 
 import { useAdaptiveFlow, useTaskTimer } from "@aie/react";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Adapted } from "@/components/adaptive/adapted";
 import { Instructions } from "@/components/adaptive/instructions";
 import { cn } from "@/lib/cn";
@@ -263,6 +263,32 @@ export function MigrateScenario() {
     timer.start();
   }, [timer]);
 
+  // Keyboard focus: changing steps (or the layout adapting) unmounts the control that had focus.
+  // Remember whether focus was inside the wizard, and if it fell to <body>, move it to the
+  // current step heading instead of back to the top of the page.
+  const container = useRef<HTMLDivElement>(null);
+  const activeHeading = useRef<HTMLHeadingElement>(null);
+  const focusWasInside = useRef(false);
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    const onFocusIn = (event: FocusEvent) => {
+      focusWasInside.current = container.current?.contains(event.target as Node) ?? false;
+    };
+    document.addEventListener("focusin", onFocusIn);
+    return () => document.removeEventListener("focusin", onFocusIn);
+  }, []);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs when the step or layout changes.
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
+    const lost = document.activeElement === null || document.activeElement === document.body;
+    if (focusWasInside.current && lost) activeHeading.current?.focus();
+  }, [flow.step, stepped]);
+
   if (started) {
     return (
       <div role="status" className="space-y-4">
@@ -300,7 +326,7 @@ export function MigrateScenario() {
   };
 
   return (
-    <div className="space-y-6">
+    <div ref={container} className="space-y-6">
       <header>
         <h2 className="text-2xl font-bold">Migrate a database</h2>
         <p className="mt-1 text-ink-muted">Copy a database into a cluster with no data loss.</p>
@@ -336,7 +362,7 @@ export function MigrateScenario() {
               ))}
             </ol>
             <section aria-labelledby="step-title" className="mt-6 max-w-2xl">
-              <h3 id="step-title" className="text-lg font-bold">
+              <h3 id="step-title" ref={activeHeading} tabIndex={-1} className="text-lg font-bold">
                 Step {flow.step + 1} of {STEPS.length}: {current?.title}
               </h3>
               <div className="mt-2">
@@ -380,7 +406,11 @@ export function MigrateScenario() {
                   )}
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 className="font-bold">
+                    <h3
+                      ref={active ? activeHeading : undefined}
+                      tabIndex={active ? -1 : undefined}
+                      className="font-bold"
+                    >
                       {i + 1}. {s.title}
                     </h3>
                     {done && (

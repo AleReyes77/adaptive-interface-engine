@@ -52,7 +52,7 @@ export const DEFAULT_RULES: readonly Rule[] = [
         {
           all: [
             { signal: "confusion", op: "gte", value: 0.5 },
-            { signal: "experience", op: "lt", value: 0.4 },
+            { signal: "experience", op: "lt", value: 0.4, minConfidence: 0.5 },
           ],
         },
       ],
@@ -83,9 +83,9 @@ export const DEFAULT_RULES: readonly Rule[] = [
   {
     id: "newcomer-guidance",
     description:
-      "This is one of your first tasks in this workspace, so instructions are more detailed.",
+      "You have completed few tasks in this workspace so far, so instructions are more detailed.",
     priority: 10,
-    when: { signal: "experience", op: "lt", value: 0.2 },
+    when: { signal: "experience", op: "lt", value: 0.2, minConfidence: 0.5 },
     adapt: { instructions: "detailed" },
   },
 ];

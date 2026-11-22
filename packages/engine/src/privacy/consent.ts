@@ -3,8 +3,9 @@ import type { ConsentCategory } from "../events/taxonomy";
 /**
  * What a person allowed the engine to observe.
  *
- * Each category can be granted on its own. `remember` controls whether choices and the
- * lifetime task counter survive a page reload; raw events are never persisted.
+ * Each category can be granted on its own. `remember` controls whether the lifetime task counter
+ * survives a page reload. The answers themselves (consent and pinned settings) are kept once the
+ * person makes a choice, so they are not asked again. Raw events are never persisted.
  */
 export interface ConsentState {
   readonly interaction: boolean;

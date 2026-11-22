@@ -53,6 +53,12 @@ export const DEFAULT_SIGNAL_CONFIG: SignalConfig = Object.freeze({
 export interface SignalContext {
   /** Tasks completed across sessions. Only available when the person chose to be remembered. */
   readonly completedTasksTotal: number;
+  /**
+   * Whether the counter is real evidence. It only grows from timing events, so without timing
+   * consent familiarity is unknown and the experience signal reports zero confidence.
+   * Defaults to true.
+   */
+  readonly experienceKnown?: boolean;
 }
 
 /** Decayed evidence plus a raw count, accumulated per kind of observation. */
@@ -209,6 +215,16 @@ export function computeSignals(
   ].filter((r): r is string => typeof r === "string");
 
   const completed = Math.max(0, context.completedTasksTotal);
+  const experienceValue = saturate(completed, 5);
+  const experience: Signal =
+    context.experienceKnown === false
+      ? { value: 0, confidence: 0, reasons: [] }
+      : {
+          value: experienceValue,
+          // A known count of zero is still evidence: it is what makes someone new here.
+          confidence: 1,
+          reasons: completed > 0 ? [`${plural(completed, "task")} completed`] : [],
+        };
 
   return {
     confusion: signal(saturate(confusionEvidence, 3), confusionCount / 3, confusionReasons),
@@ -219,6 +235,6 @@ export function computeSignals(
     ]),
     flowStruggle: signal(struggleValue, (back.count + slowSteps.count) / 2, struggleReasons),
     riskCaution: signal(cautionValue, (cancelled.count + requested.count) / 2, cautionReasons),
-    experience: signal(saturate(completed, 5), 1, [`${plural(completed, "task")} completed`]),
+    experience,
   };
 }

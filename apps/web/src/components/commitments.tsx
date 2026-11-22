@@ -5,11 +5,11 @@ const COMMITMENTS = [
   },
   {
     title: "It never records what you type",
-    body: "Events carry field names and error codes like “range”, never values. Identifiers that look like names or emails are dropped.",
+    body: "Events carry field names and error codes like “range”, never values. Anything that isn't a short lowercase identifier, such as an email address, is rejected.",
   },
   {
-    title: "It never sends your behavior anywhere",
-    body: "Observations live in this tab's memory and expire after 20 minutes. Only your choices are saved on this device.",
+    title: "It never sends what it observes anywhere",
+    body: "Observations live in this tab's memory and expire after 20 minutes. Only your choices are saved on this device. The optional AI rewording, when enabled, receives a topic and an explanation level, nothing else.",
   },
   {
     title: "It never changes things silently",

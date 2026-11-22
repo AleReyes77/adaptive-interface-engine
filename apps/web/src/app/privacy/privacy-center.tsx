@@ -17,16 +17,17 @@ import {
 import { useEffect, useState } from "react";
 import { Commitments } from "@/components/commitments";
 import { CONSENT_LABELS } from "@/lib/labels";
+import { describeStoredRecord, type StoredRecordView } from "@/lib/stored-record";
 
-function useStoredRecord(revision: number): string | null {
-  const [record, setRecord] = useState<string | null>(null);
+function useStoredRecord(revision: number): StoredRecordView {
+  const [record, setRecord] = useState<StoredRecordView>({ kind: "empty" });
   useEffect(() => {
     // Re-read whenever the engine changes, so the panel shows exactly what is on disk.
     void revision;
     try {
-      setRecord(browserStorage()?.getItem(STORAGE_KEY) ?? null);
+      setRecord(describeStoredRecord(browserStorage()?.getItem(STORAGE_KEY) ?? null));
     } catch {
-      setRecord(null);
+      setRecord({ kind: "empty" });
     }
   }, [revision]);
   return record;
@@ -136,18 +137,28 @@ export function PrivacyCenter() {
           </dd>
           <dt className="font-semibold">Stored on this device</dt>
           <dd className="min-w-0">
-            {stored ? (
+            {stored.kind === "json" && (
               <pre className="overflow-x-auto rounded-md bg-sunken p-3 font-mono text-xs">
-                {JSON.stringify(JSON.parse(stored), null, 2)}
+                {stored.text}
               </pre>
-            ) : (
+            )}
+            {stored.kind === "unreadable" && (
+              <p className="text-caution">
+                A stored record exists but can't be read, so it is ignored. Delete everything to
+                remove it.
+              </p>
+            )}
+            {stored.kind === "empty" && (
               <span className="text-ink-muted">
                 Nothing. Choices are saved only after you make one.
               </span>
             )}
           </dd>
           <dt className="font-semibold">Sent to a server</dt>
-          <dd className="text-ink-muted">Nothing. The engine runs entirely in this tab.</dd>
+          <dd className="text-ink-muted">
+            Nothing the engine observes. If the optional AI rewording is enabled and you use it,
+            only the topic and the explanation level are sent.
+          </dd>
         </dl>
         <div className="mt-6 flex flex-wrap gap-3">
           <button

@@ -90,3 +90,52 @@ test("deleting everything forgets choices and asks again", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Let this interface adapt/ })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem("aie:v1"))).toBeNull();
 });
+
+test("the privacy center still renders when the stored record is corrupted", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("aie:v1", "{bad"));
+  await page.goto("/privacy");
+  await expect(page.getByText(/can't be read, so it is ignored/)).toBeVisible();
+  await page.getByRole("button", { name: "Delete everything" }).click();
+  expect(await page.evaluate(() => localStorage.getItem("aie:v1"))).toBeNull();
+});
+
+test("moving through the migration keeps keyboard focus on the current step", async ({ page }) => {
+  await page.goto("/console");
+  await allowAdaptation(page);
+  await page.getByRole("tab", { name: /Migrate/ }).click();
+  await page.getByRole("button", { name: "Continue" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: /Choose the target/ })).toBeFocused();
+  await page.getByRole("button", { name: "Change" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: /Choose the source/ })).toBeFocused();
+});
+
+test("simulations render the event log without React key errors", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  await page.goto("/console");
+  await allowAdaptation(page);
+  await page.getByRole("button", { name: "Use the keyboard", exact: true }).click();
+  await page.getByRole("button", { name: "Hesitate", exact: true }).click();
+  await expect(page.getByText(/Observed events \(1[0-9]\)/)).toBeVisible();
+  const items = page.getByRole("complementary", { name: "Engine inspector" }).locator("ol li");
+  await expect.poll(() => items.count()).toBeGreaterThanOrEqual(10);
+  expect(errors.filter((e) => /same key/i.test(e))).toEqual([]);
+});
+
+test("single-key shortcuts stay off until the interface adapts to the keyboard", async ({
+  page,
+}) => {
+  await page.goto("/console");
+  await allowAdaptation(page);
+  await page.getByRole("tab", { name: /Understand/ }).click();
+  await page.keyboard.press("3");
+  await expect(page.getByRole("tab", { name: /Understand/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+});

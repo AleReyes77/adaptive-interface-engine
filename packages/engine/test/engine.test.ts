@@ -63,6 +63,31 @@ describe("createAdaptiveEngine", () => {
     expect(snapshot.consent.interaction).toBe(false);
   });
 
+  it("keeps adaptations that still hold when an unrelated category is revoked", () => {
+    const { engine, advance } = setup();
+    for (let i = 0; i < 4; i++) {
+      engine.track({ type: "step.completed", flowId: "migration", step: i, durationMs: 3_000 });
+    }
+    engine.track({ type: "task.completed", taskId: "deploy", durationMs: 40_000 });
+    advance(20_000);
+    engine.tick();
+    expect(engine.getSnapshot().profile.instructions).toBe("minimal");
+
+    engine.setConsent({ modality: false });
+    const { profile, decisions } = engine.getSnapshot();
+    expect(profile.instructions).toBe("minimal");
+    expect(profile.explanationLevel).toBe("expert");
+    expect(decisions.instructions).toMatchObject({ source: "rule", ruleId: "condense-for-fluent" });
+  });
+
+  it("never applies familiarity rules without timing consent, the only source of that evidence", () => {
+    const { engine } = setup({ consent: { modality: true } });
+    const snapshot = engine.getSnapshot();
+    expect(snapshot.signals.experience.confidence).toBe(0);
+    expect(snapshot.matchedRuleIds).not.toContain("newcomer-guidance");
+    expect(snapshot.profile.instructions).toBe("standard");
+  });
+
   it("stops observing and shows the standard interface while paused", () => {
     const { engine } = setup();
     for (let i = 0; i < 3; i++) engine.track(help);

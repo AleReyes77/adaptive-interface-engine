@@ -236,6 +236,8 @@ function EventLog() {
   const { events } = useEngineSnapshot();
   const now = useNow(5_000);
   const recent = events.slice(-12).reverse();
+  // Identical events can share a timestamp, so the key is the event's position in the log.
+  const newest = events.length - 1;
   if (recent.length === 0) {
     return (
       <p className="text-sm text-ink-muted">
@@ -245,8 +247,9 @@ function EventLog() {
   }
   return (
     <ol className="space-y-1.5 font-mono text-xs">
-      {recent.map((event) => (
-        <li key={`${event.at}-${event.type}-${describeEvent(event)}`} className="flex gap-3">
+      {recent.map((event, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: the position in this append-only log is the event's identity; rows hold no state.
+        <li key={newest - i} className="flex gap-3">
           <span className="w-10 shrink-0 text-end text-ink-muted tabular-nums">
             {Math.max(0, Math.round((now - event.at) / 1_000))}s
           </span>

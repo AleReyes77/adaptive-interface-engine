@@ -13,6 +13,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
+  // Each test drives a real browser against one production server; a few at a time keeps it fast.
+  workers: isCI ? 2 : 3,
   reporter: isCI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,

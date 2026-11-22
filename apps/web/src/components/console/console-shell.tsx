@@ -31,8 +31,11 @@ export function ConsoleShell() {
   const navigation = useDimension("navigation");
   const id = useId();
 
-  // Shortcuts: 1–4 switch scenarios, "i" toggles the inspector. Hints appear in keyboard mode.
+  // Shortcuts: 1–4 switch scenarios, "i" toggles the inspector. Single-key shortcuts are active
+  // only once the interface adapted to the keyboard (WCAG 2.1.4); pinning navigation to
+  // "pointer" in the inspector turns them off.
   useEffect(() => {
+    if (navigation !== "keyboard") return;
     const onKey = (event: globalThis.KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey || event.altKey || isTyping(event.target)) return;
       if (document.querySelector("dialog[open]")) return;
@@ -46,7 +49,7 @@ export function ConsoleShell() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [navigation]);
 
   const onTabKey = (event: KeyboardEvent<HTMLButtonElement>) => {
     const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
