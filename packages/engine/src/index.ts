@@ -68,6 +68,7 @@ export {
   type StabilizerOptions,
 } from "./profile/stabilizer";
 export { DEFAULT_RULES } from "./rules/defaults";
+export { describeCondition } from "./rules/describe";
 export { conditionSpecificity, evaluateCondition } from "./rules/evaluate";
 export { findPersonalInference } from "./rules/guard";
 export { type RuleValidation, validateRules } from "./rules/schema";
