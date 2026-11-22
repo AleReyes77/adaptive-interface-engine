@@ -6,7 +6,7 @@
 
 Most interfaces look the same to everyone. A first-time user sees exactly what a five-year
 veteran sees, which creates friction, confusion and mistakes. The Adaptive Interface Engine
-adapts an interface to *how a person is interacting with it right now*: it simplifies an
+adapts an interface to _how a person is interacting with it right now_: it simplifies an
 explanation after repeated confusion, removes instructions for someone who is moving fast,
 offers contextual help after repeated form errors, adapts navigation for keyboard users,
 splits a hard process into steps, and changes how an irreversible action is confirmed.
@@ -19,7 +19,7 @@ Next.js demo console that makes every adaptation visible and explainable.
 - A deterministic, testable engine: events → signals → rules → adaptation profile.
 - Every adaptation is explainable ("why did this change?") and reversible by the user.
 - Privacy by design: local-only, consent per category, retention limits, export and delete.
-- A demo that lets a reviewer *see* the engine work in under a minute.
+- A demo that lets a reviewer _see_ the engine work in under a minute.
 
 ## Non-goals
 
@@ -29,7 +29,7 @@ Next.js demo console that makes every adaptation visible and explainable.
 ## Anti-goals (failure even if it "works")
 
 - Inferring diagnoses, disabilities, age, health or any personal trait. Signals describe
-  *interactions*, never *people*.
+  _interactions_, never _people_.
 - A UI that flickers or rearranges itself unpredictably.
 - Adaptations the user cannot see, understand or turn off.
 - Sending interaction data or user-entered values anywhere.
@@ -42,7 +42,7 @@ Three approaches were considered:
    but logic is scattered, untestable as a whole and impossible to explain.
 2. **ML model inferring a user type** — opaque, needs data, and drifts towards classifying
    people, which violates the anti-goals.
-3. **Declarative rules engine over derived signals** *(chosen)* — a closed vocabulary of
+3. **Declarative rules engine over derived signals** _(chosen)_ — a closed vocabulary of
    interaction signals feeds JSON-serializable rules that output a closed vocabulary of UI
    dimensions. Deterministic, explainable, testable, and auditable for privacy.
 
