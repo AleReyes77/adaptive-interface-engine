@@ -21,3 +21,4 @@ Thumbs.db
 !.vscode/extensions.json
 # local working notes
 .local/
+.vercel/
