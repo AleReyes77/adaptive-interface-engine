@@ -83,30 +83,36 @@ export function AdaptiveProvider({
     });
   }, [engine, trackModality]);
 
-  // Persist choices, but only once the person has made one.
+  // Persist choices, but only once the person has made one. Saving happens synchronously inside
+  // the engine's change notification, so anything that re-renders afterwards reads current data.
+  const decidedRef = useRef(decided);
+  const save = useCallback(() => {
+    if (!decidedRef.current || !storage) return;
+    const { consent, overrides, completedTasksTotal } = engine.getSnapshot();
+    const state = { consent, decided: true, overrides, completedTasksTotal };
+    const json = JSON.stringify(state);
+    if (json === lastSaved.current) return;
+    lastSaved.current = json;
+    savePersisted(storage, state);
+  }, [engine, storage]);
+
   useEffect(() => {
-    if (!decided || !storage) return;
-    const save = () => {
-      const { consent, overrides, completedTasksTotal } = engine.getSnapshot();
-      const state = { consent, decided, overrides, completedTasksTotal };
-      const json = JSON.stringify(state);
-      if (json === lastSaved.current) return;
-      lastSaved.current = json;
-      savePersisted(storage, state);
-    };
     save();
     return engine.subscribe(save);
-  }, [engine, storage, decided]);
+  }, [engine, save]);
 
   const decide = useCallback<AdaptiveContextValue["decide"]>(
     (consent) => {
+      decidedRef.current = true;
       engine.setConsent(consent);
+      save();
       setDecided(true);
     },
-    [engine],
+    [engine, save],
   );
 
   const eraseAll = useCallback(() => {
+    decidedRef.current = false;
     engine.setConsent({
       interaction: false,
       forms: false,

@@ -1,6 +1,6 @@
 import { createAdaptiveEngine, DEFAULT_PROFILE } from "@aie/engine";
 import { act, fireEvent, render, renderHook, screen } from "@testing-library/react";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAdaptation, useConsent, useDecision, useEngineSnapshot, useTrack } from "../src/hooks";
@@ -81,6 +81,34 @@ describe("AdaptiveProvider", () => {
       result.current.track({ type: "help.opened", topicId: "topic" });
     });
     expect(result.current.snap.events).toHaveLength(1);
+  });
+
+  it("has saved a choice by the time components re-render with it", () => {
+    const storage = new MemoryStorage();
+    function StoredProbe() {
+      const { revision } = useEngineSnapshot();
+      const { decide } = useConsent();
+      const [stored, setStored] = useState<string | null>(null);
+      useEffect(() => {
+        void revision;
+        setStored(storage.getItem(STORAGE_KEY));
+      }, [revision]);
+      return (
+        <>
+          <button type="button" onClick={() => decide(ALL_CONSENT)}>
+            allow
+          </button>
+          <output data-testid="stored">{stored ?? "none"}</output>
+        </>
+      );
+    }
+    render(
+      <AdaptiveProvider storage={storage}>
+        <StoredProbe />
+      </AdaptiveProvider>,
+    );
+    act(() => screen.getByText("allow").click());
+    expect(screen.getByTestId("stored").textContent).toContain('"interaction":true');
   });
 
   it("works when storage throws", () => {
