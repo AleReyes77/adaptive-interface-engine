@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useTrack } from "../hooks";
 
 export interface TaskTimer {
@@ -24,5 +24,5 @@ export function useTaskTimer(taskId: string): TaskTimer {
     track({ type: "task.completed", taskId, durationMs });
   }, [track, taskId]);
 
-  return { start, complete };
+  return useMemo(() => ({ start, complete }), [start, complete]);
 }

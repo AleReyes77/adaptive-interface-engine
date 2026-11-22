@@ -62,6 +62,8 @@ export {
 } from "./profile/resolve";
 export {
   createStabilizer,
+  DEFAULT_COOLDOWN_MS,
+  DEFAULT_RELAX_AFTER_MS,
   type PendingChange,
   type PendingChanges,
   type Stabilizer,

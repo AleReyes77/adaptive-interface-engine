@@ -131,3 +131,41 @@ describe("useTaskTimer", () => {
     expect(engine.getSnapshot().completedTasksTotal).toBe(1);
   });
 });
+
+describe("referential stability", () => {
+  it("returns the same task timer across renders so effects can depend on it", () => {
+    const { wrapper } = setup();
+    const { result, rerender } = renderHook(() => useTaskTimer("deploy"), { wrapper });
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+  });
+
+  it("returns the same field assist while the help mode is unchanged", () => {
+    const { wrapper } = setup();
+    const { result, rerender } = renderHook(
+      () => useFieldAssist({ formId: "deploy", fieldId: "replicas" }),
+      { wrapper },
+    );
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+  });
+});
+
+describe("useAdaptiveFlow.goTo", () => {
+  it("jumps back to an earlier step and reports a single back-navigation", () => {
+    const { engine, wrapper } = setup();
+    const { result } = renderHook(() => useAdaptiveFlow({ flowId: "migration", stepCount: 4 }), {
+      wrapper,
+    });
+    act(() => result.current.next());
+    act(() => result.current.next());
+    act(() => result.current.next());
+    act(() => result.current.goTo(0));
+    expect(result.current.step).toBe(0);
+    expect(types(engine).filter((t) => t === "navigation.back")).toHaveLength(1);
+    act(() => result.current.goTo(2));
+    expect(result.current.step).toBe(0);
+  });
+});

@@ -1,7 +1,7 @@
 "use client";
 
 import type { DimensionValue } from "@aie/engine";
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useDimension, useTrack } from "../hooks";
 
 export interface FieldAssistOptions {
@@ -44,5 +44,8 @@ export function useFieldAssist({ formId, fieldId }: FieldAssistOptions): FieldAs
     track({ type: "field.corrected", formId, fieldId });
   }, [track, formId, fieldId]);
 
-  return { mode, showHelp, reportError, reportCorrected };
+  return useMemo(
+    () => ({ mode, showHelp, reportError, reportCorrected }),
+    [mode, showHelp, reportError, reportCorrected],
+  );
 }

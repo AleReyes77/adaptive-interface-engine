@@ -67,6 +67,22 @@ describe("AdaptiveProvider", () => {
     );
   });
 
+  it("uses the consent given in options when nothing is stored", () => {
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <AdaptiveProvider storage={null} options={{ consent: { interaction: true } }}>
+        {children}
+      </AdaptiveProvider>
+    );
+    const { result } = renderHook(() => ({ track: useTrack(), snap: useEngineSnapshot() }), {
+      wrapper,
+    });
+    expect(result.current.snap.consent.interaction).toBe(true);
+    act(() => {
+      result.current.track({ type: "help.opened", topicId: "topic" });
+    });
+    expect(result.current.snap.events).toHaveLength(1);
+  });
+
   it("works when storage throws", () => {
     render(
       <AdaptiveProvider storage={new ThrowingStorage()}>

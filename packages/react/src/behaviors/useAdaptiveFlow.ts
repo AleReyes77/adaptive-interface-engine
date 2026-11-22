@@ -17,6 +17,8 @@ export interface AdaptiveFlow {
   readonly isLast: boolean;
   next(): void;
   back(): void;
+  /** Returns to an earlier step (forward jumps are ignored: steps must be completed in order). */
+  goTo(step: number): void;
   reset(): void;
 }
 
@@ -42,6 +44,16 @@ export function useAdaptiveFlow({ flowId, stepCount }: AdaptiveFlowOptions): Ada
     setStep(step - 1);
   }, [step, track, flowId]);
 
+  const goTo = useCallback(
+    (target: number) => {
+      if (target < 0 || target >= step) return;
+      track({ type: "navigation.back", flowId, step });
+      stepStartedAt.current = Date.now();
+      setStep(target);
+    },
+    [step, track, flowId],
+  );
+
   const reset = useCallback(() => {
     stepStartedAt.current = Date.now();
     setStep(0);
@@ -54,6 +66,7 @@ export function useAdaptiveFlow({ flowId, stepCount }: AdaptiveFlowOptions): Ada
     isLast: step === stepCount - 1,
     next,
     back,
+    goTo,
     reset,
   };
 }

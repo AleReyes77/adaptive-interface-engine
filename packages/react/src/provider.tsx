@@ -58,9 +58,12 @@ export function AdaptiveProvider({
       engineProp ??
       createAdaptiveEngine({
         ...options,
-        consent: initial?.consent ?? options?.consent,
+        // Stored choices win, but only when the person actually made some.
+        consent: initial?.decided ? initial.consent : options?.consent,
         overrides: { ...options?.overrides, ...initial?.overrides },
-        completedTasksTotal: initial?.completedTasksTotal ?? options?.completedTasksTotal,
+        completedTasksTotal: initial?.decided
+          ? initial.completedTasksTotal
+          : options?.completedTasksTotal,
       }),
   );
   const [decided, setDecided] = useState(initial?.decided ?? true);
