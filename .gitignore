@@ -21,6 +21,3 @@ Thumbs.db
 !.vscode/extensions.json
 # local working notes
 .local/
-.superpowers/
-.claude/
-CLAUDE.md
