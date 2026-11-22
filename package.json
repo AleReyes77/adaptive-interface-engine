@@ -1,0 +1,32 @@
+{
+  "name": "adaptive-interface-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An engine that adapts interfaces to how people interact with them: privately, explainably and without inferring anything about who they are.",
+  "license": "MIT",
+  "author": "Jose Alejandro Varela Reyes",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @aie/web",
+    "build": "npm run build -w @aie/web",
+    "start": "npm run start -w @aie/web",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
+    "test:e2e": "npm run test:e2e -w @aie/web"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@types/node": "24.19.2",
+    "typescript": "5.9.3"
+  }
+}
