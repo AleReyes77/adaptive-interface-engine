@@ -9,6 +9,9 @@
 
 **An interface that adapts to how a person is using it, not just to the size of their screen.**
 
+**[Try the live demo](https://adaptive-interface-engine.vercel.app)**, or open the
+[console](https://adaptive-interface-engine.vercel.app/console) directly.
+
 Most interfaces look exactly the same to someone on their first day and to someone in their fifth
 year. That creates friction, confusion and mistakes. This engine watches for friction in the
 interaction itself (repeated help requests, rejected form fields, back-and-forth in a process,
